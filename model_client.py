@@ -4,7 +4,7 @@ import requests
 # 第一部分：准备本次调用使用的基本信息
 url = "http://localhost:11434/api/chat"
 model = "qwen3.5:2b-q4_K_M"
-question = "请用一句话解释 Python 虚拟环境的作用。"
+question = "请解释pyhton中 printf 的作用。"
 
 
 # 第二部分：组织发给 Ollama 的请求体
@@ -33,9 +33,11 @@ result  = response.json()
 # 将响应中的 JSON 解析为 Python 数据。
 # 用变量 result 保存解析结果。
 
-print(result)
 model_name = result["model"]
 answer = result["message"]["content"]
 is_done = result["done"]
+print(model_name)
+print(answer)
+print(is_done)
 # 第六部分：读取并显示结果
 # 从 result 中读取模型名称、回答内容和完成标记。

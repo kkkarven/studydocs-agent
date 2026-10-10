@@ -2,7 +2,7 @@
 
 - 语言：Python
 - 类别：字典操作
-- 检索词：字典、`dict`、按键取值、`dict[key]`、`KeyError`
+- 检索词：字典、`dict`、按键取值、`dict[key]`、`KeyError`、花括号
 - 适用范围：Python 3 的普通字典
 
 ## 作用和写法

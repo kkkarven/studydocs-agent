@@ -2,7 +2,7 @@
 
 - 语言：Python
 - 类别：内置函数
-- 检索词：`print`、`print()`、输出、`sep`、`end`
+- 检索词：`print`、`print()`、输出、`sep`、`end`、打印
 - 适用范围：Python 3
 
 ## 作用

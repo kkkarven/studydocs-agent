@@ -37,3 +37,31 @@ def read_doc(filename):
         "source": filename,
         "lines": lines,
     }
+def search_docs(key_word,language = ""):
+    search_result =[]
+    if key_word.strip() == "":
+        raise ValueError("关键词无效")
+    lower_word = key_word.strip().lower()
+    target_language = language.strip().lower()
+    doc_names = list_docs()
+    for doc_name in doc_names:
+        documents = read_doc(doc_name)
+        source = documents["source"]
+        lines = documents["lines"]
+        document_language = ""
+        for metadata_line in lines:
+            language_text = metadata_line.strip()
+            if language_text.startswith("- 语言："):
+                parts = language_text.split("：", 1)
+                document_language = parts[1].strip().lower()
+                break
+        for line_number,line in enumerate(lines,start = 1):
+            if lower_word in line.lower():
+                result_item = {
+                        "source" : source,
+                        "line_number" : line_number,
+                        "text": line}
+                search_result.append(result_item)
+                if target_language and not(target_language == document_language.lower()):
+                    search_result.remove(result_item)
+    return  search_result

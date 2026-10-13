@@ -1,15 +1,13 @@
 import requests
 import json
 from doc_tools import search_docs, read_doc
+from familiar_store import is_familiar
 
 # 第一部分：准备本次调用使用的基本信息
 url = "http://localhost:11434/api/chat"
 model = "qwen3.5:2b-q4_K_M"
-question = (
-    "请先搜索 Python itertools.groupby 的本地资料。"
-    "收到搜索结果后，如果没有匹配资料，再用 groupby 搜索一次。"
-    "第二次仍没有资料时，明确说明缺少本地资料依据，不要编造出处。"
-)
+question = "请搜索本地资料，解释 Python print 的用途，并给一个短示例及预期结果。"
+question_item = "python_print.md"
 system_prompt = """
 工具调用规则：
 - 回答前，先调用 search_docs 查找相关本地资料。同一轮可以请求多个 search_docs，每个调用只搜索一个简短主题。
@@ -94,6 +92,8 @@ for round_number in range(1, max_rounds + 1):
             print("本次读取资料：","、".join(all_source_names))
         else:
             print("缺少本地资料依据，以下说明尚未核对。")
+        if is_familiar(question_item):
+            print("该条目已在你的熟悉库中。")
         break
 
     if round_number == max_rounds:

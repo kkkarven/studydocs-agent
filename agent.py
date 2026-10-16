@@ -49,6 +49,38 @@ tool_spec = {
 def new_conversation():
     return [{"role": "system", "content": system_prompt}]
 
+def request_model(request_body):
+    max_attempts = 2
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = requests.post(
+                url=url,
+                json=request_body,
+                timeout=(5, 60),
+            )
+        except (
+            requests.exceptions.Timeout,
+            requests.exceptions.ConnectionError,
+        ):
+            if attempt == max_attempts:
+                raise
+
+            print("连接失败或超时，准备重试一次。")
+            continue
+
+        print("HTTP状态码：", response.status_code)
+        response.raise_for_status()
+        result = response.json()
+
+        if not isinstance(result, dict):
+            raise ValueError("模型响应必须是字典。")
+
+        if not isinstance(result.get("message"), dict):
+            raise ValueError("模型响应缺少 message 字典。")
+
+        return result
+
 def ask_agent(question, history):
     messages = history.copy()
     messages.append({
@@ -75,10 +107,7 @@ def ask_agent(question, history):
 
     for round_number in range(1, max_rounds + 1):
         print("模型请求轮次：", round_number)
-        response = requests.post(url=url,json=request_body,timeout=60)
-        print("HTTP状态码：",response.status_code)
-        response.raise_for_status()
-        result =  response.json()
+        result = request_model(request_body)
         message = result["message"]
         print("第%d轮模型消息："% round_number,message)
         tool_calls =  message.get("tool_calls",[])

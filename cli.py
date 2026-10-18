@@ -4,11 +4,13 @@ from familiar_store import (
     list_familiar,
 )
 import readline
-from agent import ask_agent, new_conversation
+from agent import new_conversation
+from run_store import run_and_record as ask_agent, export_markdown
 from familiar_store import is_familiar
 from review_store import get_daily_review
 from doc_tools import read_doc
 import requests
+
 
 ITEM_ALIASES = {
     "python print": "python_print.md",
@@ -34,13 +36,17 @@ def resolve_item(text):
 
 
 def main():
-    print("可用命令：/登记 条目、/熟悉库、/取消登记 条目、/新会话、/复习、/查看 条目、/退出")
-
+    print("可用命令：/登记 条目、/熟悉库、/取消登记 条目、/新会话、/复习、/查看 条目、/导出、/退出")
+    last_answer_record = None
     history = new_conversation()
     completed_turns = 0
     max_session_turns = 2
     while True:
         user_text = input("> ").strip()
+
+        parts = user_text.split(maxsplit=1)
+        command = parts[0] if parts else ""
+        argument = parts[1] if len(parts) > 1 else ""
 
         if user_text == "":
             continue
@@ -147,7 +153,21 @@ def main():
                 # 参数不能为空，使用 resolve_item(argument) 找到文件名。
                 # 无法确定时提示并继续。
                 # 读取资料，显示原文。
+            elif command == "/导出":
+                if argument != "":
+                    print("/导出 不接受参数")
+                    continue
 
+                if last_answer_record is None:
+                    print("当前没有可导出的成功回答")
+                    continue
+
+                try:
+                    path = export_markdown(last_answer_record)
+                except (OSError, ValueError) as error:
+                    print(f"导出失败：{error}")
+                else:
+                    print(f"已导出：{path}")
             else:
                 if user_text.startswith("/"):
                     print("未知命令，请检查命令名称。")
@@ -187,9 +207,10 @@ def main():
                 if result["answer"] is None:
                     print("达到模型请求上限，本次未获得最终回答。")
                     continue
+
                 history = result["history"]
                 completed_turns += 1
-
+                last_answer_record = result["record"]
                 print(result["answer"])
                 sources = result["sources"]
                 if sources:

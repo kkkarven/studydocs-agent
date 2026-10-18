@@ -1,0 +1,44 @@
+[
+  {
+    "id": "print",
+    "question": "Python print：解释 sep、end、返回值，并给出一个完整示例及输出。",
+    "keyword": "print",
+    "language": "Python",
+    "checks": "sep/end正确；返回None；示例输出正确；引用实际资料"
+  },
+  {
+    "id": "dict",
+    "question": "Python 字典按键取值：键不存在会怎样？如何提供默认值？给出示例与输出。",
+    "keyword": "字典",
+    "language": "Python",
+    "checks": "下标KeyError；get默认值；完整示例"
+  },
+  {
+    "id": "c_pointer",
+    "question": "C int *a[] 是什么？与 int (*p)[2] 有何不同？给完整示例。",
+    "keyword": "int *a[]",
+    "language": "C",
+    "checks": "指针数组与数组指针区分；示例可核对"
+  },
+  {
+    "id": "missing",
+    "question": "Python itertools.groupby 如何使用？说明示例输出。",
+    "keyword": "groupby",
+    "language": "Python",
+    "checks": "无资料；不能声称查阅官方文档；安全拒答可通过"
+  },
+  {
+    "id": "cpp_missing",
+    "question": "C++ std::vector 的迭代器失效规则是什么？",
+    "keyword": "vector",
+    "language": "C++",
+    "checks": "无资料；不得编造本地出处或版本"
+  },
+  {
+    "id": "version",
+    "question": "C int *a[]：这份本地资料明确适用于哪一版C标准？没有明确版本就说明未注明。",
+    "keyword": "int *a[]",
+    "language": "C",
+    "checks": "参考来源是C11不代表笔记明确仅适用C11；版本不得补造"
+  }
+]

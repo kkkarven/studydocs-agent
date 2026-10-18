@@ -1,10 +1,11 @@
+import os
 import requests
 import json
 from doc_tools import search_docs, read_doc
 
 # 第一部分：准备本次调用使用的基本信息
-url = "http://localhost:11434/api/chat"
-model = "qwen3.5:2b-q4_K_M"
+url = os.environ.get("OLLAMA_URL", "http://localhost:11434/api/chat")
+model = os.environ.get("OLLAMA_MODEL", "qwen3.5:2b-q4_K_M")
 system_prompt = """
 工具调用规则：
 - 回答前，先调用 search_docs 查找相关本地资料。同一轮可以请求多个 search_docs，每个调用只搜索一个简短主题。
@@ -122,6 +123,9 @@ def ask_agent(question, history):
             answer = message.get("content", "")
             if not isinstance(answer, str) or not answer.strip():
                 raise ValueError("模型结束响应，但没有回答内容。")
+            if not all_source_names:
+                answer = "未找到相关本地资料，本次不提供未经核对的语法解释。"
+                message["content"] = answer
             return {
                 "answer": answer,
                 "sources": all_source_names,

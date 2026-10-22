@@ -1,43 +1,79 @@
+import json
+import os
+
 import requests
 
+url = os.environ.get(
+    "OLLAMA_URL",
+    "http://localhost:11434/api/chat"
+)
+model = os.environ.get(
+    "OLLAMA_MODEL",
+    "qwen3.5:2b-q4_K_M",
+)
 
-# 第一部分：准备本次调用使用的基本信息
-url = "http://localhost:11434/api/chat"
-model = "qwen3.5:2b-q4_K_M"
-question = "请解释pyhton中 printf 的作用。"
+def request_model(request_body):#一次完整请求
+    max_attempts = 2
+    for attempt in range(1,max_attempts + 1):
+        try:
+            response = requests.post(
+                url = url,
+                json=request_body,
+                timeout=(5,60)
+            )
+        except(
+            requests.exceptions.Timeout,
+            requests.exceptions.ConnectionError,
+        ):
+            if attempt == max_attempts:
+                raise
+            print("连接失败或超时，准备重试一次。")
+            continue
+        print("HTTP:",response.status_code)
+        response.raise_for_status()
+        result = response.json()
+        if not isinstance(result,dict):
+            raise ValueError("模型响应必须是字典。")
+        if not isinstance(result.get("message"),dict):
+            raise ValueError("模型响应缺少 message 字典。")
+        return result
 
+def main():
+    question = "请用一句话解释 Python print() 的作用。"
+    request_body = {
+        "model":model,
+        "messages":[
+            {
+                "role":"user",
+                "content":question,
+            }
+        ],
+        "stream":False,
+        "think":False,
+        "options":{
+            "num_ctx":4096,
+            "temperature":0,
+        },
+    }
+    print("请求模型：",model)
+    print("用户问题：",question)
+    try:
+        result = request_model(request_body)
 
-# 第二部分：组织发给 Ollama 的请求体
-request_body = {
-    "model":model,
-    "messages":[{"role":"user","content":question}],
-    "stream":False,"think":False,"options":{"num_ctx":4096}
-    # 在这里组织 model、messages、stream、think 和 options
-}
-
-
-# 第三部分：发送请求
-response = requests.post(url=url,json=request_body,timeout=60)
-# 调用 requests.post，传入地址、请求体和超时设置。
-# 用变量 response 保存它返回的 Response 对象。
-
-print("HTTP状态码：",response.status_code)
-print("原始响应文本：",response.text)
-response.raise_for_status()
-# 第四部分：检查 HTTP 响应
-# 显示 HTTP 状态码和原始响应文本。
-# 调用响应对象的方法，检查是否存在 HTTP 错误。
-
-result  = response.json()
-# 第五部分：解析响应数据
-# 将响应中的 JSON 解析为 Python 数据。
-# 用变量 result 保存解析结果。
-
-model_name = result["model"]
-answer = result["message"]["content"]
-is_done = result["done"]
-print(model_name)
-print(answer)
-print(is_done)
-# 第六部分：读取并显示结果
-# 从 result 中读取模型名称、回答内容和完成标记。
+        answer = result["message"].get("content")   
+        if not isinstance(answer,str) or not answer.strip():
+            raise ValueError("模型没有返回非空回答。")
+    except requests.exceptions.JSONDecodeError as error:
+        print("模型响应不是有效json：",error)
+        return 1
+    except requests.exceptions.RequestException as error:
+        print("模型请求失败：",error)
+        return 1
+    except ValueError as error:
+        print("模型响应结构不符合要求：",error)
+        return 1
+    print("原始响应:\n",json.dumps(result,ensure_ascii=False,indent=2))
+    print("\n模型回答:\n",answer)
+    return 0
+if __name__ == "__main__":
+    raise SystemExit(main())
